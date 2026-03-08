@@ -19,5 +19,21 @@ namespace TamagochiConsole.Models.Pet.Animals
         {
             this.furColors = furColors;
         }
+
+        public string GetFurColors()
+        {
+            string furColors = "Your pets fur colors are: ";
+            foreach (FurColor fc in this.furColors) furColors += $"\n  - {fc.ToString()}";
+            return furColors;
+        }
+        public override void PrintPetsData()
+        {
+            Console.WriteLine($"""
+                {base.ToString()}
+                {this.GetFurColors()}
+
+                {this.GetWhatCanEat()}
+                """);
+        }
     }
 }

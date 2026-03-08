@@ -2,20 +2,50 @@
 using TamagochiConsole.UI;
 using TamagochiConsole.Models.Items;
 using TamagochiConsole.Models.Pet;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace TamagochiConsole.Models
 {
     public class Owner
     {
         private APet? pet;
-        private AConsumable[] inventori = new AConsumable[]{ };
+        private AItem[] inventori = UI_Config.OwnerInventori.GetInventori();
 
-        public Owner(APet pet, AConsumable[] inventori)
+        public Owner()
         {
-
+            this.pet = null;
+        }
+        public Owner(APet pet)
+        {
+            SetPet(pet);
         }
         public APet? GetPet() => this.pet;
         public void SetPet(APet pet) => this.pet = pet;
+
+        /// <summary>
+        /// This method search for a saved pet and assign that value to owners pet;
+        /// </summary>
+        public void RecoverSavedPet()
+        {
+            this.pet = APet.LoadPet();
+        }
+        /// <summary>
+        /// This method trys to save pets data
+        /// </summary>
+        public bool SavePet()
+        {
+            try
+            {
+                this.GetPet().SavePetsData();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// It gives the list of food that the player have in the inventori
         /// </summary>
@@ -43,67 +73,41 @@ namespace TamagochiConsole.Models
             return medicines;
         }
         /// <returns>All consumables in the inventori</returns>
-        public AConsumable[] GetConsumables() => this.inventori;
+        public AItem[] GetAllItems() => this.inventori;
 
         public void Inventori()
         {
-            Console.WriteLine(UI_Config.EnglishMenus.MenuTitle);
-            switch(ConsoleKeyMenu((UI_Config.EnglishMenus.MenuOption, 'A', "See all and use one of them") + "\n" + (UI_Config.EnglishMenus.MenuOption, 'M', "See medicines.") + "\n" + (UI_Config.EnglishMenus.MenuOption, 'F', "See food."), 'N'))
-            {
-                case 'A':
-                    UseInventoriItem();
-                    break;
-                case 'M':
-                    foreach (Medicine m in GetConsumableMedicine()) Console.WriteLine(m.ToString());
-                    break;
-                case 'F':
-                    foreach (Food f in GetConsumableFood()) Console.WriteLine(f.ToString());
-                    break;
-                default:
-                    Console.WriteLine(UI_Config.EnglishMenus.OptionNoRecognized);
-                    break;
-            }
+            
 
         }
         public void UseInventoriItem()
         {
-            AConsumable[] consums = GetConsumables();
+            AItem[] items = GetAllItems();
             string options = "";
-            for (int i = 0; i < consums.Length; i++) options += (UI_Config.EnglishMenus.MenuOption, i, $"{consums[i].GetName()} : {consums[i].GetConsumableType()}");
-            int consumablePosition = NumericMenu(options, consums.Length);
-            if (consumablePosition < consums.Length && consumablePosition >= 0)
+            //for (int i = 0; i < consums.Length; i++) options += (UI_Config.InventoriMenus.MenuOption, i, $"{consums[i].GetName()} : {consums[i].GetConsumableType()}");
+            int itemPosition = NumericMenu(options, items.Length);
+            if (itemPosition < items.Length && itemPosition >= 0)
             {
-                if (consums[consumablePosition] is Medicine medicine) this.pet.Health_IncreaseOrReduce(medicine.GetRecover());
+                if (items[itemPosition] is Medicine medicine) this.pet.Health_IncreaseOrReduce(medicine.GetRecover());
                 
                 if (this.pet is ALivePet pet)
                 {
-                    if (consums[consumablePosition] is Medicine m)
+                    if (items[itemPosition] is Medicine m)
                     {
                         pet.CureIllnes(m);
                         return;
                     }
-                    if (consums[consumablePosition] is Food food) 
+                    if (items[itemPosition] is Food food) 
                     {
                         pet.StomechFull_IncreaseOrReduce(food.GetRecover());
                         return;
                     }
                 }
             }
-            else Console.WriteLine(UI_Config.EnglishMenus.OptionNoRecognized);
+            else Console.WriteLine(UI_Config.InventoriMenus.OptionNoRecognized);
             
         }
 
-        /// <summary>
-        /// Display a menu that ask the user to press a key depending on which option they want to use
-        /// </summary>
-        /// <param name="options">A string where must be apearing all the menu options, with the key that the user must press to access that option</param>
-        /// <param name="nullOption">The option that do not access any option from the menu</param>
-        /// <returns>Char entered by the user</returns>
-        private char ConsoleKeyMenu(string options, char nullOption)
-        {
-            Console.WriteLine(UI_Config.EnglishMenus.MenuTitle, nullOption + $"{options}");
-            return Console.ReadKey().KeyChar;
-        }
         /// <summary>
         /// Display a menu that ask the user to enter a number depending on which option they want to use
         /// </summary>
@@ -114,7 +118,7 @@ namespace TamagochiConsole.Models
         {
             int num;
             bool correctInput = true;
-            Console.Write(UI_Config.EnglishMenus.MenuTitle, nullOption + $"{options}");
+            Console.Write(UI_Config.InventoriMenus.MenuTitle, nullOption + $"{options}");
             do
             {
                 correctInput = Int32.TryParse(Console.ReadLine(), out num);

@@ -13,5 +13,13 @@ namespace TamagochiConsole.Models.Pet.Animals
         public Chicken(string name) : base(name, canEat)
         {
         }
+        public override void PrintPetsData()
+        {
+            Console.WriteLine($"""
+                {base.ToString()}
+
+                {this.GetWhatCanEat()}
+                """);
+        }
     }
 }

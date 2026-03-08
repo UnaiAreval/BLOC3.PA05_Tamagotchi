@@ -41,13 +41,21 @@ namespace TamagochiConsole.Models.Pet
             foreach (FoodType ft in this.whatCanEat) whatCanEat += $"\n - {ft.ToString()}";
             return whatCanEat;
         }
-        public void GetMedicData()
+        public string GetMedicData()
         {
-            Console.WriteLine($"{this.name}s medic information: \n \n|_________________________");
-            foreach (IllnesData medicData in medicHistori)
+            string medicHistori = $"{this.name}s medic information: ";
+            if (this.medicHistori.Count == 0) medicHistori += "Empty";
+            else
             {
-                Console.WriteLine(medicData.ToString());
+                medicHistori += "\n \n | _________________________";
+                foreach (IllnesData medicData in this.medicHistori)
+                {
+                    medicHistori += medicData.ToString() + "\n";
+                }
             }
+
+            medicHistori += $"\n \n {this.GetWhatCanEat()}";
+            return medicHistori;
         }
         /// <summary>
         /// Method that gives an illnes to the pet (it gets sick). If the pet already have four illnes (five with the new one) it dies. If pet already had or have that illnes it will not be added.
@@ -104,5 +112,7 @@ namespace TamagochiConsole.Models.Pet
         /// </summary> 
         /// <returns></returns>  
         public void StomechFull_IncreaseOrReduce(int incOrRed) => this.stomechFull += incOrRed;
+        public int GetStomechFullnes() => this.stomechFull;
+        public void SetStomechFullnes(int stomechFull) => this.stomechFull = stomechFull;
     }
 }
